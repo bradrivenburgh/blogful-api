@@ -22,6 +22,14 @@ describe.only('Articles Endpoints', function () {
   afterEach('cleaup', () => db('blogful_articles').truncate());
 
   describe(`GET /articles`, () => {
+    context(`Given no articles`, () => {
+      it('responds with 200 and an empty list', () => {
+        return supertest(app)
+          .get('/articles')
+          .expect(200, []);
+      });
+    });
+
     context(`Given there are articles in the database`, () => {
       const testArticles = makeArticlesArray();
 
@@ -37,24 +45,33 @@ describe.only('Articles Endpoints', function () {
           .expect(200, testArticles)
       });
     });
+  });
 
-    describe(`GET /articles/:article_id`, () => {
-      context(`Given there are articles in the database`, () => {
-        const testArticles = makeArticlesArray();
+  describe(`GET /articles/:article_id`, () => {
+    context(`Given no articles`, () => {
+      it(`responds with 404`, () => {
+        const articleId = 123456;
+        return supertest(app)
+          .get(`/articles/${articleId}`)
+          .expect(404, { error: {  message: `Article doesn't exist` } });
+      });
+    });
 
-        beforeEach('insert articles', () => {
-          return db
-            .into('blogful_articles')
-            .insert(testArticles);
-        });  
+    context(`Given there are articles in the database`, () => {
+      const testArticles = makeArticlesArray();
 
-        it(`responds with 200 and the specified article`, () => {
-          const article_id = 1;
-          const expectedArticle = testArticles[article_id - 1]
-          return supertest(app)
-            .get(`/articles/${article_id}`)
-            .expect(200, expectedArticle)
-        });
+      beforeEach('insert articles', () => {
+        return db
+          .into('blogful_articles')
+          .insert(testArticles);
+      });  
+
+      it(`responds with 200 and the specified article`, () => {
+        const article_id = 1;
+        const expectedArticle = testArticles[article_id - 1]
+        return supertest(app)
+          .get(`/articles/${article_id}`)
+          .expect(200, expectedArticle)
       });
     });
   });
