@@ -4,18 +4,18 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
+const ArticleService = require('../src/articles-service');
 
 // Create Express application
 const app = express();
 
-// Create middleware logic
-
-// Define morgan options
+// Create middleware logic and options
+// Morgan options
 const morganOption = (NODE_ENV === 'production')
   ? 'tiny'
   : 'common';
 
-// Define validation function
+// Validation function
 function validateBearerToken(req, res, next) {
   const apiToken = process.env.API_TOKEN;
   const authToken = req.get('Authorization');
@@ -28,7 +28,7 @@ function validateBearerToken(req, res, next) {
   next();
 }
 
-// Define error handler
+// Error handler
 function errorHandler(error, req, res, next) {
   let response;
   if (NODE_ENV === 'production') {
@@ -40,6 +40,7 @@ function errorHandler(error, req, res, next) {
   res.status(500).json(response);
 }
 
+// Implement Middleware
 app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
@@ -48,8 +49,21 @@ app.use(cors());
 // Routers can go here
 app.use(errorHandler);
 
+// Endpoint handlers
+
 app.get('/', (req, res) => {
   res.send('Hello, boilerplate!');
+});
+
+app.get('/articles', (req, res, next) => {
+  const knexInstance = req.app.get('db');
+  ArticleService.getAllArticles(knexInstance)
+    .then(articles => {
+      res
+      .status(200)
+      .json(articles)
+    })
+    .catch(next);
 });
 
 module.exports = app;
