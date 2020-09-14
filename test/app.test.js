@@ -6,10 +6,4 @@ describe('App', () => {
       .get('/')
       .expect(200, 'Hello, boilerplate!');
   });
-
-  it(`GET '/articles' responds with 200 containing 'All articles'`, () => {
-    return supertest(app)
-      .get('/articles')
-      .expect(200, 'All articles');
-  });
 });

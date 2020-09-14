@@ -50,7 +50,6 @@ app.use(cors());
 app.use(errorHandler);
 
 // Endpoint handlers
-
 app.get('/', (req, res) => {
   res.send('Hello, boilerplate!');
 });
@@ -62,6 +61,15 @@ app.get('/articles', (req, res, next) => {
       res
       .status(200)
       .json(articles)
+    })
+    .catch(next);
+});
+
+app.get('/articles/:article_id', (req, res, next) => {
+  const knexInstance = req.app.get('db');
+  ArticleService.getById(knexInstance, req.params.article_id)
+    .then(article => {
+      res.json(article);
     })
     .catch(next);
 });

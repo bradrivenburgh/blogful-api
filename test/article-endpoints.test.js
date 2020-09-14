@@ -17,6 +17,7 @@ describe.only('Articles Endpoints', function () {
   });
   after('disconnect from db', () => db.destroy());
   before('clean the table', () => db('blogful_articles').truncate());
+  afterEach('cleaup', () => db('blogful_articles').truncate());
 
   context(`Given there are articles in the database`, () => {
     const testArticles = [{
@@ -59,6 +60,14 @@ describe.only('Articles Endpoints', function () {
       return supertest(app)
         .get('/articles')
         .expect(200, testArticles)
+    });
+
+    it(`GET /articles/:article_id responds with 200 and the specified article`, () => {
+      const article_id = 1;
+      const expectedArticle = testArticles[article_id - 1]
+      return supertest(app)
+      .get(`/articles/${article_id}`)
+      .expect(200, expectedArticle)
     });
   });
 });
