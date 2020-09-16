@@ -4,7 +4,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
-const ArticleService = require('../src/articles-service');
+const ArticleService = require('../src/articles/articles-service');
 
 // Create Express application
 const app = express();
@@ -44,7 +44,7 @@ function errorHandler(error, req, res, next) {
 app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
-// app.use(express.json()); // Enable if using non-GET endpoints
+app.use(express.json()); // Enable if using non-GET endpoints
 // app.use(validateBearerToken); // Enable after adding validation
 // Routers can go here
 app.use(errorHandler);
@@ -77,6 +77,20 @@ app.get('/articles/:article_id', (req, res, next) => {
           });
       }
       res.json(article);
+    })
+    .catch(next);
+});
+
+app.post('/articles', (req, res, next) => {
+  const knexInstance = req.app.get('db');
+  const { title, content, style } = req.body;
+  const newArticle = { title, content, style };
+  ArticleService.insertArticle(knexInstance, newArticle)
+    .then(article => {
+      res
+        .status(201)
+        .location(`/articles/${article.id}`)
+        .json(article);
     })
     .catch(next);
 });

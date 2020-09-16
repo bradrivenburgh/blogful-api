@@ -19,7 +19,7 @@ describe.only('Articles Endpoints', function () {
 
   before('clean the table', () => db('blogful_articles').truncate());
 
-  afterEach('cleaup', () => db('blogful_articles').truncate());
+  afterEach('cleanup', () => db('blogful_articles').truncate());
 
   describe(`GET /articles`, () => {
     context(`Given no articles`, () => {
@@ -72,6 +72,38 @@ describe.only('Articles Endpoints', function () {
         return supertest(app)
           .get(`/articles/${article_id}`)
           .expect(200, expectedArticle)
+      });
+    });
+  });
+
+  describe('POST /articles', () => {
+    it('creates an article, responding with 201 and the new article', function () {
+      this.retries(3)
+      const newArticle = {
+        title: 'Test new article',
+        style: 'Listicle',
+        content: 'Test new article content...'
+      };
+
+      return supertest(app)
+      .post('/articles')
+      .send(newArticle)
+      .expect(201)
+      .expect(res => {
+        expect(res.body.title).to.eql(newArticle.title);
+        expect(res.body.style).to.eql(newArticle.style);
+        expect(res.body.content).to.eql(newArticle.content);
+        expect(res.body).to.have.property('id');
+        expect(res.headers.location).to.eql(`/articles/${res.body.id}`);
+        
+        const expectedDate = new Date().toLocaleString();
+        const actualDate = new Date(res.body.date_published).toLocaleString();
+        expect(actualDate).to.eql(expectedDate);
+      })
+      .then(postRes => {
+        return supertest(app)
+          .get(`/articles/${postRes.body.id}`)
+          .expect(postRes.body)
       });
     });
   });
