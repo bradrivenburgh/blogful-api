@@ -4,7 +4,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
-const ArticleService = require('../src/articles/articles-service');
+const articlesRouter = require('./articles/articles-router');
 
 // Create Express application
 const app = express();
@@ -44,55 +44,14 @@ function errorHandler(error, req, res, next) {
 app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
-app.use(express.json()); // Enable if using non-GET endpoints
+app.use(express.json()); // Middleware converts req.body to JSON format
 // app.use(validateBearerToken); // Enable after adding validation
-// Routers can go here
+app.use('/articles', articlesRouter);
 app.use(errorHandler);
 
 // Endpoint handlers
 app.get('/', (req, res) => {
   res.send('Hello, boilerplate!');
-});
-
-app.get('/articles', (req, res, next) => {
-  const knexInstance = req.app.get('db');
-  ArticleService.getAllArticles(knexInstance)
-    .then(articles => {
-      res
-      .status(200)
-      .json(articles)
-    })
-    .catch(next);
-});
-
-app.get('/articles/:article_id', (req, res, next) => {
-  const knexInstance = req.app.get('db');
-  ArticleService.getById(knexInstance, req.params.article_id)
-    .then(article => {
-      if (!article) {
-        return res
-          .status(404)
-          .json({
-            error: { message: `Article doesn't exist` }
-          });
-      }
-      res.json(article);
-    })
-    .catch(next);
-});
-
-app.post('/articles', (req, res, next) => {
-  const knexInstance = req.app.get('db');
-  const { title, content, style } = req.body;
-  const newArticle = { title, content, style };
-  ArticleService.insertArticle(knexInstance, newArticle)
-    .then(article => {
-      res
-        .status(201)
-        .location(`/articles/${article.id}`)
-        .json(article);
-    })
-    .catch(next);
 });
 
 module.exports = app;
