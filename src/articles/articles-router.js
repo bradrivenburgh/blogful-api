@@ -58,11 +58,11 @@ articlesRouter
             error: { message: `Article doesn't exist` }
           })
         }
-        res.article = article
-        next()
+        res.article = article;
+        next();
       })
-      .catch(next)
-  })
+      .catch(next);
+  });
 
 articlesRouter
   .route('/articles/:article_id')
