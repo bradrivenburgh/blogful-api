@@ -50,19 +50,24 @@ articlesRouter
 
 articlesRouter
   .route('/articles/:article_id')
-  .get((req, res, next) => {
+  .all((req, res, next) => {
     ArticlesService.getById(knexInstance(req), req.params.article_id)
       .then(article => {
         if (!article) {
-          return res
-            .status(404)
-            .json({
-              error: { message: `Article doesn't exist` }
-            });
+          return res.status(404).json({
+            error: { message: `Article doesn't exist` }
+          })
         }
-        res.json(sanitizedArticle(article));
+        res.article = article
+        next()
       })
-      .catch(next);
+      .catch(next)
+  })
+
+articlesRouter
+  .route('/articles/:article_id')
+  .get((req, res, next) => {
+    res.json(sanitizedArticle(res.article))
   });
 
 articlesRouter
@@ -70,15 +75,9 @@ articlesRouter
   .delete((req, res, next) => {
     ArticlesService.deleteArticle(knexInstance(req), req.params.article_id)
       .then((numRowsDeleted) => {
-        (numRowsDeleted)
-        ? res
+        res
           .status(204)
           .end()
-        : res
-          .status(404)
-          .json({
-            error: { message: `Article doesn't exist` }
-          }); 
       })
       .catch(next)
   })
