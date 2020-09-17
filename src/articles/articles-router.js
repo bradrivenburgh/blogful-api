@@ -3,6 +3,7 @@ const xss = require('xss');
 const ArticlesService = require('./articles-service');
 
 const articlesRouter = express.Router();
+const knexInstance = (req) => req.app.get('db')
 const sanitizedArticle = (article) => ({
   id: article.id,
   style: article.style,
@@ -12,10 +13,9 @@ const sanitizedArticle = (article) => ({
 });
 
 articlesRouter
-  .route('/')
+  .route('/articles')
   .get((req, res, next) => {
-    const knexInstance = req.app.get('db');
-    ArticlesService.getAllArticles(knexInstance)
+    ArticlesService.getAllArticles(knexInstance(req))
       .then(articles => {
         res
         .status(200)
@@ -25,9 +25,8 @@ articlesRouter
   });
 
 articlesRouter
-  .route('/')
+  .route('/articles')
   .post((req, res, next) => {
-    const knexInstance = req.app.get('db');
     const { title, content, style } = req.body;
     const newArticle = { title, content, style };
 
@@ -39,7 +38,7 @@ articlesRouter
       }
     }
 
-    ArticlesService.insertArticle(knexInstance, newArticle)
+    ArticlesService.insertArticle(knexInstance(req), newArticle)
       .then(article => {
         res
           .status(201)
@@ -50,10 +49,9 @@ articlesRouter
   });
 
 articlesRouter
-  .route('/:article_id')
+  .route('/articles/:article_id')
   .get((req, res, next) => {
-    const knexInstance = req.app.get('db');
-    ArticlesService.getById(knexInstance, req.params.article_id)
+    ArticlesService.getById(knexInstance(req), req.params.article_id)
       .then(article => {
         if (!article) {
           return res
@@ -66,5 +64,15 @@ articlesRouter
       })
       .catch(next);
   });
+
+articlesRouter
+  .route('/articles/:article_id')
+  .delete((req, res, next) => {
+    ArticlesService.deleteArticle(knexInstance(req), req.params.article_id)
+      .then(() => {
+        res.status(204).end();
+      })
+      .catch(next)
+  })
 
 module.exports = articlesRouter;

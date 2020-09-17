@@ -46,7 +46,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json()); // Middleware converts req.body to JSON format
 // app.use(validateBearerToken); // Enable after adding validation
-app.use('/articles', articlesRouter);
+app.use(articlesRouter);
 app.use(errorHandler);
 
 // Endpoint handlers

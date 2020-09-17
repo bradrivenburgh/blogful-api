@@ -164,7 +164,7 @@ describe('Articles Endpoints', function () {
           });
       });
     });
-    
+
     context(`Given an XSS attack article`, () => {
       const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
   
@@ -179,5 +179,34 @@ describe('Articles Endpoints', function () {
           });
       });
     });
+  });
+
+  describe.only('DELETE /articles/:article_id', () => {
+    context('given the are articles in the database', () => {
+      const testArticles = makeArticlesArray();
+
+      beforeEach('insert articles', () => {
+        return db
+          .into('blogful_articles')
+          .insert(testArticles);
+      });
+
+      it('responds with 204 and removes the article', () => {
+        const idToRemove = 2;
+        const expectedArticles = testArticles
+          .filter(article => article.id !== idToRemove);
+        return supertest(app)
+          .delete(`/articles/${idToRemove}`)
+          .expect(204)
+          .then(res => {
+            return supertest(app)
+              .get('/articles')
+              .expect(expectedArticles)
+          });
+      });
+
+
+    });
+
   });
 });
