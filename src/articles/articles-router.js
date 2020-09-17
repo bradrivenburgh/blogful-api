@@ -69,8 +69,16 @@ articlesRouter
   .route('/articles/:article_id')
   .delete((req, res, next) => {
     ArticlesService.deleteArticle(knexInstance(req), req.params.article_id)
-      .then(() => {
-        res.status(204).end();
+      .then((numRowsDeleted) => {
+        (numRowsDeleted)
+        ? res
+          .status(204)
+          .end()
+        : res
+          .status(404)
+          .json({
+            error: { message: `Article doesn't exist` }
+          }); 
       })
       .catch(next)
   })
