@@ -1,8 +1,15 @@
 const express = require('express');
+const xss = require('xss');
 const ArticlesService = require('./articles-service');
 
 const articlesRouter = express.Router();
-// const jsonParser = express.json();
+const sanitizedArticle = (article) => ({
+  id: article.id,
+  style: article.style,
+  title: xss(article.title), // sanitize title
+  content: xss(article.content), // sanitize content
+  date_published: article.date_published,
+});
 
 articlesRouter
   .route('/')
@@ -12,7 +19,7 @@ articlesRouter
       .then(articles => {
         res
         .status(200)
-        .json(articles)
+        .json(articles.map(sanitizedArticle))
       })
       .catch(next);  
   });
@@ -37,7 +44,7 @@ articlesRouter
         res
           .status(201)
           .location(`/articles/${article.id}`)
-          .json(article);
+          .json(sanitizedArticle(article));
       })
       .catch(next);
   });
@@ -55,7 +62,7 @@ articlesRouter
               error: { message: `Article doesn't exist` }
             });
         }
-        res.json(article);
+        res.json(sanitizedArticle(article));
       })
       .catch(next);
   });

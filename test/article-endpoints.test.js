@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const knex = require('knex');
 const app = require('../src/app');
-const { makeArticlesArray } = require('./articles.fixtures');
+const { makeArticlesArray, makeMaliciousArticle } = require('./articles.fixtures');
 
 describe('Articles Endpoints', function () {
   let db;
@@ -39,6 +39,25 @@ describe('Articles Endpoints', function () {
           .insert(testArticles);
       });
 
+      context(`Given an XSS attack article`, () => {
+        const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
+
+        beforeEach("insert malicious article", () => {
+          return db.into("blogful_articles").insert([maliciousArticle]);
+        });
+
+        it("removes XSS attack content", () => {
+          return supertest(app)
+            .get(`/articles`)
+            .expect(200)
+            .expect((res) => {
+              const insertedArticle = res.body[res.body.length - 1];
+              expect(insertedArticle.title).to.eql(expectedArticle.title);
+              expect(insertedArticle.content).to.eql(expectedArticle.content);
+            });
+        });
+      });
+      
       it(`responds with 200 and all of the articles`, () => {
         return supertest(app)
           .get('/articles')
@@ -65,6 +84,24 @@ describe('Articles Endpoints', function () {
           .into('blogful_articles')
           .insert(testArticles);
       });  
+
+      context(`Given an XSS attack article`, () => {
+        const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
+
+        beforeEach("insert malicious article", () => {
+          return db.into("blogful_articles").insert([maliciousArticle]);
+        });
+
+        it("removes XSS attack content", () => {
+          return supertest(app)
+            .get(`/articles/${maliciousArticle.id}`)
+            .expect(200)
+            .expect((res) => {
+              expect(res.body.title).to.eql(expectedArticle.title)
+              expect(res.body.content).to.eql(expectedArticle.content)
+            });
+        });
+      });
 
       it(`responds with 200 and the specified article`, () => {
         const article_id = 1;
@@ -126,6 +163,22 @@ describe('Articles Endpoints', function () {
             error: { message: `Missing '${field}' in request body` }
           });
       });
+
+      context.only(`Given an XSS attack article`, () => {
+        const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
+
+        it("removes XSS attack content", () => {
+          return supertest(app)
+            .post(`/articles`)
+            .send(maliciousArticle)
+            .expect(201)
+            .expect((res) => {
+              expect(res.body.title).to.eql(expectedArticle.title);
+              expect(res.body.content).to.eql(expectedArticle.content);
+            });
+        });
+      });
+
     });
   });
 });
