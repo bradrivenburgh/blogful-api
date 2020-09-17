@@ -164,7 +164,7 @@ describe('Articles Endpoints', function () {
           });
       });
 
-      context.only(`Given an XSS attack article`, () => {
+      context(`Given an XSS attack article`, () => {
         const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
 
         it("removes XSS attack content", () => {
