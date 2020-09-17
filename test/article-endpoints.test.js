@@ -163,22 +163,21 @@ describe('Articles Endpoints', function () {
             error: { message: `Missing '${field}' in request body` }
           });
       });
-
-      context(`Given an XSS attack article`, () => {
-        const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
-
-        it("removes XSS attack content", () => {
-          return supertest(app)
-            .post(`/articles`)
-            .send(maliciousArticle)
-            .expect(201)
-            .expect((res) => {
-              expect(res.body.title).to.eql(expectedArticle.title);
-              expect(res.body.content).to.eql(expectedArticle.content);
-            });
-        });
+    });
+    
+    context(`Given an XSS attack article`, () => {
+      const { maliciousArticle, expectedArticle } = makeMaliciousArticle();
+  
+      it("removes XSS attack content", () => {
+        return supertest(app)
+          .post(`/articles`)
+          .send(maliciousArticle)
+          .expect(201)
+          .expect((res) => {
+            expect(res.body.title).to.eql(expectedArticle.title);
+            expect(res.body.content).to.eql(expectedArticle.content);
+          });
       });
-
     });
   });
 });
