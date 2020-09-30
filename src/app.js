@@ -5,6 +5,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const articlesRouter = require('./articles/articles-router');
+const usersRouter = require('./users/users-router');
+const commentsRouter = require('./comments/comments-router');
 
 // Create Express application
 const app = express();
@@ -47,6 +49,14 @@ app.use(cors());
 app.use(express.json()); // Middleware converts req.body to JSON format
 // app.use(validateBearerToken); // Enable after adding validation
 app.use('/api', articlesRouter);
+/** 
+ * Routers for /users and /comments pass in the full endpoint; 
+ * differs from router for /articles which only passes in the 
+ * '/api' portion of the route to be more explicit in the router
+ * module about the endpoint
+*/
+app.use('/api/users', usersRouter);
+app.use('/api/comments', commentsRouter);
 app.use(errorHandler);
 
 // Endpoint handlers

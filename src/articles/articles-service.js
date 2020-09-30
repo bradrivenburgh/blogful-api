@@ -11,13 +11,14 @@ const ArticlesService = {
       .returning('*')
       .then(rows => {
         return rows[0];
-      })
+      });
   },
   getById(knexInstance, id) {
     return knexInstance
       .select('*')
       .from('blogful_articles')
-      .where('id', id).first()
+      .where('id', id)
+      .first();
   },
   deleteArticle(knexInstance, id) {
     return knexInstance
