@@ -4,7 +4,7 @@ const xss = require('xss');
 const ArticlesService = require('./articles-service');
 
 const articlesRouter = express.Router();
-const knexInstance = (req) => req.app.get('db')
+const knexInstance = (req) => req.app.get('db');
 const sanitizeArticle = (article) => ({
   id: article.id,
   style: article.style,
